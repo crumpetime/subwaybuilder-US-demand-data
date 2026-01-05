@@ -2,7 +2,8 @@ name: Build with Nuitka
 
 on:
   push:
-  pull_request:
+    tags:
+      - "v*"`
 
 jobs:
   build:
@@ -66,9 +67,30 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}
+          name: create_US_demand_file_${{ matrix.os }}
           path: |
             create_US_demand_file.exe
             create_US_demand_file.bin
             create_US_demand_file
           if-no-files-found: ignore
+
+      # -------------------------
+      # RELEASE
+      # -------------------------
+      release:
+        name: Create GitHub Release
+        needs: build
+        runs-on: ubuntu-latest
+    
+        steps:
+          - name: Download all artifacts
+            uses: actions/download-artifact@v4
+            with:
+              path: dist
+    
+          - name: Create Release and Upload Assets
+            uses: softprops/action-gh-release@v2
+            with:
+              files: dist/**/*   # Upload everything inside dist/
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
