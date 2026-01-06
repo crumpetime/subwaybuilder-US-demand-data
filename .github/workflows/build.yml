@@ -86,6 +86,7 @@ jobs:
       
           mv "$FILE" "$NEW_NAME"
           echo "Renamed $FILE -> $NEW_NAME"
+          echo "FINAL_EXECUTABLE=$NEW_NAME" >> $GITHUB_ENV
 
 
       # -------------------------
@@ -96,7 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: create_US_demand_file_${{ matrix.os }}
-          path: create_US_demand_file_${{ matrix.os }}*
+          path: ${{ env.FINAL_EXECUTABLE }}
           if-no-files-found: error
 
   # -------------------------
