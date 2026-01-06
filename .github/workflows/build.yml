@@ -2,12 +2,14 @@ name: Build with Nuitka
 
 on:
   push:
+    tags:
+      - "v*"
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]#, windows-latest, macos-latest] # limit to ubuntu for testing
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
