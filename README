@@ -56,7 +56,8 @@ See the examples/ directory for example JSON input files used for the maps share
                          Example: [[-77.69260, 43.29925], [-77.69280, 43.28780], [-77.74163, 43.30533], 
                                    [-77.76616, 43.29830], [-77.75377, 43.29501], [-77.73190, 43.29221], 
                                    [-77.71047, 43.28571], [-77.53833, 43.22158]]
-    moved_point_locs : list of list of floats, coordinates in [lon, lat] where you want to move the demand points to.
+    moved_point_locs : list of list of floats, coordinates in [lon, lat] where you want to move the 
+                                               demand points to.
                                                Must correspond exactly to the order used in `point_locs_to_move`.
                        Example: [[-77.69253, 43.29669], [-77.69224, 43.28529], [-77.73431, 43.30351], 
                                  [-77.76969, 43.29365], [-77.75209, 43.29262], [-77.72819, 43.29165], 
@@ -66,11 +67,11 @@ See the examples/ directory for example JSON input files used for the maps share
                                Example: [7000] 
     airport_loc : list of list of floats, coordinates in [lon, lat] of the city's airports.
                   Example: [[-77.67166, 43.12919]]
-    airport_required_locs : list of list of list of floats, coordinates in [lon, lat] where you want airports' travelers 
-                                                    to reside.  One pop will be placed at the demand bubble closest to 
-                                                    each specified coordinate.
-                                                    If you don't care to set this, then use [] for each airport (e.g., 
-                                                    use [[], []] for 2 airports) and the code will decide automatically.
+    airport_required_locs : list of list of list of floats, coordinates in [lon, lat] where you want airports' 
+                                                    travelers to reside.  One pop will be placed at the 
+                                                    demand bubble closest to each specified coordinate.
+                                                    If you don't care to set this, then use [] and the code 
+                                                    will decide automatically.
                             Example: [[[-77.61298,  43.15729], [-77.60688,  43.15614], [-77.58936,  43.1547 ],
                                        [-77.59342,  43.15564], [-77.6741 ,  43.21029], [-77.61647,  43.10564],
                                        [-77.61391,  43.08771], [-77.55086,  43.11299], [-77.57981,  43.19774],
@@ -78,19 +79,23 @@ See the examples/ directory for example JSON input files used for the maps share
                                        [-77.64286,  43.0601 ], [-77.65179,  43.05802], [-77.44922,  43.01093],
                                        [-77.51514,  43.09333]]]
     air_pop_size_req : list of ints, size of airports' pops assigned by `airport_required_locs`.  
-                            Note that if this exceeds `MAXPOPSIZE` then each pop will be split into multiple smaller pops.
+                            Note that if this exceeds `MAXPOPSIZE` then each pop will be split into multiple 
+                            smaller pops.
                        Example: [200]
     air_pop_size_remain : list of ints, size of airports' pops assigned automatically by the code.
-                          Note that if this exceeds `MAXPOPSIZE` then each pop will be split into multiple smaller pops.
+                              Note that if this exceeds `MAXPOPSIZE` then each pop will be split into multiple 
+                              smaller pops.
                           Example: [150]
     
     universities : list of strings, 2-4 letter identifier for each university considered.
-                                    All subsequent university-related parameters must correspond exactly to this ordering.
+                                    All subsequent university-related parameters must correspond exactly to 
+                                    this ordering.
                    Example: ["UR", "RIT", "SJF", "NU", "RWU"],
     univ_loc : list of list of floats, coordinates for each university's demand bubble.
                Example: [[-77.62668, 43.12989], [-77.67629, 43.08389], [-77.51239, 43.11575], 
                          [-77.51873, 43.10218], [-77.79857, 43.12568]]
-    univ_merge_within : list of ints, distance in meters to merge any nearby demand points into the new university demand point.
+    univ_merge_within : list of ints, distance in meters to merge any nearby demand points into the new university 
+                                      demand point.
                    Example: [0, 350, 300, 0, 0]
     students : list of ints, number of students that attend each campus.
                Example: [11946, 17166, 4000, 2500, 1500]
@@ -98,11 +103,13 @@ See the examples/ directory for example JSON input files used for the maps share
                     Example: [0.45, 0.4, 0.33, 0.5, 0.6]
     univ_pop_size : list of ints, size of each pop created for each university.
                     Example: [75, 75, 75, 75, 75]
-    univ_perc_travel : list of list of floats, fraction of students that live [on campus, off campus] that travel on an average day.   
+    univ_perc_travel : list of list of floats, fraction of students that live [on campus, off campus] that travel 
+                                               on an average day.   
                                 Default: [0.3, 0.5]
 
     entertainment : list of strings, short identifiers for each entertainment location
     ent_loc : list of list of floats, coordinates in [lon, lat] for each entertainment location 
-    ent_req_residences : list of list of list of floats, like `airport_required_locs` but for entertainment locations
+    ent_req_residences : list of list of list of floats, like `airport_required_locs` but for 
+                                                         entertainment locations
     ent_size : list of ints, number of daily visitors to each entertainment location
     ent_pop_size : list of ints, size of each pop created for each entertainment location
