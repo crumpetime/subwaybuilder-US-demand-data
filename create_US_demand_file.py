@@ -8,9 +8,10 @@ The input JSON file must have the following fields defined:
     airport : list of strings, IATA codes for the local airport 
                                Note: The first listed airport is used here to uniquely identify a city.  
               Example: ["ROC"]
-    state : string, two-letter code for the state your city is in.  
+    states : string or list of strings, two-letter code for the state(s) your map covers.  
             Example: "ny"
-    year : int, the year you want to use for the LODES data.  At the time of writing, it must be within 2002-2022.  
+            Example: ["md", "dc", "va"]
+    year : int, the year you want to use for the LODES data.  At the time of writing, it must be within 2002-2023.  
            Example: 2022
     bbox : list of ints, the [min_lon, min_lat, max_lon, max_lat] boundary for the city.  
            Example: [-77.8216, 43.0089, -77.399, 43.3117],
@@ -160,8 +161,8 @@ if not isinstance(states, list):
     states = [states]
 states = [state.lower() for state in states]
 year = cfg['year']
-if (year < 2002) or (year > 2022):
-    raise ValueError("'year' must be in the range 2002-2022.\nReceived: "+str(year))  
+if (year < 2002) or (year > 2023):
+    raise ValueError("'year' must be in the range 2002-2023.\nReceived: "+str(year))  
 
 # Points that are not in the spot you want
 point_locs_to_move = cfg['point_locs_to_move']
@@ -274,8 +275,7 @@ try:
     else:
         assert len(ent_pop_size) == len(entertainment), str(len(entertainment))+" entertainment locations specified, but "+str(len(ent_pop_size))+" entertainment pop sizes were provided."
 except Exception as e:
-    print(e)
-    print("Disabling entertainment pops.")
+    print("Entertainment data either not provided or missing required parameters.  Disabling entertainment pops.")
     entertainment = False
 
 ###############################################################################
