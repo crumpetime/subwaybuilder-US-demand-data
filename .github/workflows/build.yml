@@ -2,8 +2,8 @@ name: Build with Nuitka
 
 on:
   push:
-    tags:
-      - "v*"`
+  #  tags:
+  #    - "v*"`
 
 jobs:
   build:
