@@ -1,3 +1,14 @@
+This code allows you to calculate demand data for US cities using the real origin-destination pairs provided 
+by the LODES data: https://lehd.ces.census.gov/data/
+
+To make the resulting number of pops and points feasible for Subway Builder, a multi-step agglomeration 
+process is used.  If you disable the agglomeration, or use small values for agglomeration, then it is 
+likely that the resulting demand data will lag when used in Subway Builder.  See the examples for 
+reasonable values you can use for most cities.
+
+
+Running the code
+----------------
 This script is meant to be run like
     ./create_US_demand_file.py Rochester.json
 
@@ -5,11 +16,15 @@ If you're downloading a pre-compiled release, then it might look something like
     ./create_US_demand_file.bin Rochester.json
 
 You must provide an input JSON file.  Below are all available parameters for this input file.
-Some parameters are optional: point_locs_to_move/moved_point_locs, universities + related parameters, and entertainment + related parameters.
+Some parameters are optional: point_locs_to_move/moved_point_locs, universities + related parameters, and 
+                              entertainment + related parameters.
 If omitted, they will be ignored.
 All other parameters are required.
 See the examples/ directory for example JSON input files used for the maps shared on the Discord.
 
+
+Parameters
+----------
     city : string, the city you're modeling.  
            Example: "Rochester"
     airport : list of strings, IATA codes for the local airport 
