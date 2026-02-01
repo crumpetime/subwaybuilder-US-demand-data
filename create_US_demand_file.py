@@ -135,7 +135,7 @@ np.random.seed(42)
 
 ###############################################################################
 
-if __name__ == '__main__":
+if __name__ == "__main__":
     # Load the configuration file
     with open(sys.argv[1], 'r') as fcfg:
         cfg = json.load(fcfg)
