@@ -1102,7 +1102,7 @@ if __name__ == "__main__":
 
         if platform.system() == "Windows":
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-                results = list(ex.map(process_home_node_0, [i for i in range(0,len(demand["points"]))]))
+                results = list(ex.map(process_home_node, [i for i in range(0,len(demand["points"]))]))
         else:
             with Pool(processes=MAX_WORKERS) as pool:
                 #results = pool.map(process_home_node, range(len(demand['points'])))
