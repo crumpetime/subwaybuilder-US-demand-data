@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 """
 This script is meant to be run like
     ./create_US_demand_file.py Rochester.json
@@ -145,7 +147,7 @@ np.random.seed(42)
 
 ###############################################################################
 
-if __name__ == "__main__":
+def main():
     # Load the configuration file
     with open(sys.argv[1], 'r') as fcfg:
         cfg = json.load(fcfg)
@@ -1229,3 +1231,10 @@ if __name__ == "__main__":
             json.dump(demand, json_file, indent=4)
         else:
             json.dump(demand, json_file, indent=None, separators=(',', ':'))
+
+
+if __name__ == "__main__":
+    import multiprocessing as mp
+    mp.freeze_support()
+    main()
+
