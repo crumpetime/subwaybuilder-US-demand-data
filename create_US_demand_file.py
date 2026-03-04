@@ -136,8 +136,8 @@ The input JSON file must have the following fields defined:
 
     base_pop_size : list of ints, size of each pop created for each base.
 
-    base_perc_travel : list of list of floats, fraction of personnel that live [on base, off base] that travel on an average day.   
-                                Default: [0.3, 0.5]
+    base_perc_travel : list of floats, fraction of personnel that live [on base, off base] that travel on an average day.   
+                                Default: [0.4, 0.7]
     
 
 TODOs:
