@@ -183,7 +183,6 @@ See the examples/ directory for example JSON input files used for some of the ma
   </tr>
 </table>
 
-
 ## Airport‑related Parameters
 <table>
   <tr>
@@ -235,7 +234,6 @@ See the examples/ directory for example JSON input files used for some of the ma
     <td><code>[150]</code></td>
   </tr>
 </table>
-
 
 ## University‑related Parameters
 <table>
@@ -296,8 +294,6 @@ See the examples/ directory for example JSON input files used for some of the ma
   </tr>
 </table>
 
-
-
 ## Entertainment‑related Parameters
 <table>
   <tr>
@@ -353,7 +349,111 @@ See the examples/ directory for example JSON input files used for some of the ma
 
 </table>
 
+## Hotel‑related Parameters
+<table>
+  <tr>
+    <th style="width:150px;">Parameter</th>
+    <th style="width:100px;">Type</th>
+    <th style="width:200px;">Description</th>
+    <th style="width:202px;">Example</th>
+  </tr>
 
+  <tr>
+    <td>hotels</td>
+    <td>list of strings</td>
+    <td>Identifiers for hotel locations.</td>
+    <td></td>
+  </tr>
 
+  <tr>
+    <td>hot_loc</td>
+    <td>list of list of floats</td>
+    <td>Coordinates for hotel locations.</td>
+    <td></td>
+  </tr>
 
+  <tr>
+    <td>hot_size</td>
+    <td>list of ints</td>
+    <td>Number of people staying at each hotel.</td>
+    <td><code>[4110, 6247, 4384]</code></td>
+  </tr>
+
+  <tr>
+    <td>hot_pop_size</td>
+    <td>list of ints</td>
+    <td>Pop size created for each hotel location.</td>
+    <td><code>[200, 200, 200]</code></td>
+  </tr>
+
+  <tr>
+    <td>hot_travel_split</td>
+    <td>list of floats</td>
+    <td>Fraction of hotel visitors that commute to [entertainment locations, airports] on an average day.</td>
+    <td><code>[0.5, 0.5]</code></td>
+  </tr>
+
+</table>
+
+## Military base‑related Parameters
+<table>
+  <tr>
+    <th style="width:150px;">Parameter</th>
+    <th style="width:100px;">Type</th>
+    <th style="width:200px;">Description</th>
+    <th style="width:202px;">Example</th>
+  </tr>
+
+  <tr>
+    <td>bases</td>
+    <td>list of strings</td>
+    <td>Identifiers for base locations.</td>
+    <td><code>["JFTB"]</code></td>
+  </tr>
+
+  <tr>
+    <td>base_loc</td>
+    <td>list of list of floats</td>
+    <td>Coordinates for base locations.</td>
+    <td><code>[[-76.60832, 39.28540],
+  [-76.62232, 39.28318],
+  [-76.62269, 39.27800]]</code></td>
+  </tr>
+
+  <tr>
+    <td>base_merge_within</td>
+    <td>list of ints</td>
+    <td>Merge distance (meters) for base demand points.</td>
+    <td><code>[0, 0, 0]</code></td>
+  </tr>
+
+  <tr>
+    <td>personnel</td>
+    <td>list of ints</td>
+    <td>Number of employees that work at each base.</td>
+    <td><code>[4110, 6247, 4384]</code></td>
+  </tr>
+
+  <tr>
+    <td>base_pop_size</td>
+    <td>list of ints</td>
+    <td>Pop size created for each base location.</td>
+    <td><code>[200, 200, 200]</code></td>
+  </tr>
+
+  <tr>
+    <td>perc_onbase</td>
+    <td>list of floats</td>
+    <td>Percentage of personnel that live in on-base housing for each base.</td>
+    <td><code>[0, 0.3, 0.1, 0.8]</code></td>
+  </tr>
+
+  <tr>
+    <td>base_perc_travel</td>
+    <td>list of floats</td>
+    <td>Fraction of personnel that live [on base, off base] that travel on an average day.</td>
+    <td><code>[0.4, 0.7]</code></td>
+  </tr>
+
+</table>
 
