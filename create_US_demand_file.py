@@ -125,7 +125,7 @@ The input JSON file must have the following fields defined:
     bases : list of strings, identifier for each base considered.
                 All subsequent base-related parameters must correspond exactly to this ordering.
 
-    univ_loc : list of list of floats, coordinates for each base's demand bubble.
+    base_loc : list of list of floats, coordinates for each base's demand bubble.
 
     base_merge_within : list of ints, distance in meters to merge any nearby demand points into the new base demand point.
                         If not provided, values default to 0 so no mergers occur.
@@ -266,8 +266,7 @@ def process_home_node(i, demand, G, points_by_id):
 def main():
     start = time.time()
     # Load the configuration file
-    #with open(sys.argv[1], 'r') as fcfg:
-    with open("las.json", 'r') as fcfg:
+    with open(sys.argv[1], 'r') as fcfg:
         cfg = json.load(fcfg)
 
     # Defines for preparing the demand file
@@ -463,7 +462,6 @@ def main():
         entertainment = False
 
     # Hotel data
-    usehotels = True
     try:
         hotels = cfg['hotels']
         if not isinstance(hotels, list):
@@ -491,13 +489,11 @@ def main():
         except:
             print("hot_travel_split not specified/understood.  Assuming a 50/50 travel split for hotel pops.")
             hot_pop_size = [0.5,0.5]
-        
-    except:
-        usehotels = False
-        print("Hotel data either not provided or missing required parameters.  Disabling hotel pops.")
+    except Exception as e:
+        print("Hotel data either not provided or missing required parameters:\n", e, "\nDisabling hotels.")
+        hotels = False
 
     # Military data
-    usebases = True
     try:
         bases = cfg['bases']
         if not isinstance(bases, list):
@@ -540,7 +536,8 @@ def main():
             base_perc_travel = [0.3, 0.5]
         assert len(base_perc_travel) == 2, "base_pop_size must be a list of 2 values.\nFormat: [% on-base employees that travel daily, % off-base employees that travel daily]"
     except:
-        usebases = False
+        print("Military base data either not provided or missing required parameters:\n", e, "\nDisabling bases.")
+        bases = False
         
     ###############################################################################
 
@@ -1041,7 +1038,7 @@ def main():
     ###############################################################################
 
 
-    if usehotels:
+    if hotels:
         print("Adding hotel demand") #SUPER scuffed model for hotel demand
         #ent_req_residences = []
         #airport_req_locs = []
@@ -1278,12 +1275,12 @@ def main():
                 "popIds": []
             }
             
-            if ent_merge_within[iuniv]:
+            if ent_merge_within[ient]:
                 # Merge nearby points into this one
                 point_locs = np.array([p['location'] for p in demand['points']])
                 dists = U.haversine(point['location'][0], point['location'][1], 
                                     point_locs[:,0], point_locs[:,1])
-                iloc_merge = np.arange(len(demand['points']), dtype=int)[dists <= ent_merge_within[iuniv]][::-1] # largest to smallest
+                iloc_merge = np.arange(len(demand['points']), dtype=int)[dists <= ent_merge_within[ient]][::-1] # largest to smallest
                 pops_by_id = {p["id"]: p for p in demand["pops"]}
                 for iloc in iloc_merge:
                     point['jobs'] += demand['points'][iloc]['jobs']
@@ -1350,8 +1347,8 @@ def main():
 
 
     ###############################################################################
-    if usebases:
-
+    
+    if bases:
         print("Adding base demand")
         base_points = []
         for ibase in range(len(bases)):
