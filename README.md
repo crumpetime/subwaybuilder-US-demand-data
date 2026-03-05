@@ -122,14 +122,14 @@ See the examples/ directory for example JSON input files used for some of the ma
   <tr>
     <td>CALCULATE_ROUTES</td>
     <td>bool</td>
-    <td>Whether to calculate commuting routes<br><b>Note:</b> This can take a long time. Set to false while testing to save time until you're ready to make the final version.</td>
+    <td>Whether to calculate commuting routes<br><b>Note:</b> This can take a long time when using <code>osmnx</code>. Set to false while testing to save time until you're ready to make the final version.</td>
     <td><code>true</code></td>
   </tr>
 
   <tr>
     <td>ROUTING_METHOD</td>
     <td>(optional)<br>string</td>
-    <td>Method to use when calculating routes.<br>Options: <code>osmnx</code>, <code>osrm</code><br>Note: when using OSRM, you must have already set up a local OSRM server on port 5000 for the specified <code>bbox</code>.</td>
+    <td>Method to use when calculating routes.<br><b>Options:</b> <code>osmnx</code>, <code>osrm</code><br><b>Note:</b> when using OSRM, you must have already set up a local OSRM server on port 5000 for the specified <code>bbox</code>.</td>
     <td>Default: <code>osmnx</code></td>
   </tr>
 
