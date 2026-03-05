@@ -325,24 +325,22 @@ def main():
     if CALCULATE_ROUTES:
         try:
             ROUTING_METHOD = cfg['ROUTING_METHOD'].lower()
-            assert ROUTING_METHOD in ['osmnx', 'osrm'], "`ROUTING_METHOD` must be either 'osmnx' or 'osrm', but received "+ROUTING_METHOD
-            if ROUTING_METHOD == 'osrm':
-                # Make test request to be sure that the local server is running
-                response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
-                                        str(np.round((bbox[0]+bbox[2])/2., 5))+","+\
-                                        str(np.round((bbox[1]+bbox[3])/2., 5)))
-                assert response.status_code == 200, "osrm routing requested, but unable to get a " + \
-                           "request from the local osrm server.  " + \
-                           "Are you sure it's running on port 5000 and covers the specified `bbox`?"
         except:
             ROUTING_METHOD = 'osmnx'
-        print("Using", ROUTING_METHOD, "to calculate routes")
+        assert ROUTING_METHOD in ['osmnx', 'osrm'], "`ROUTING_METHOD` must be either 'osmnx' or 'osrm', but received "+ROUTING_METHOD
+        if ROUTING_METHOD == 'osrm':
+            # Make test request to be sure that the local server is running
+            response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
+                                    str(np.round((bbox[0]+bbox[2])/2., 5))+","+\
+                                    str(np.round((bbox[1]+bbox[3])/2., 5)))
+            assert response.status_code == 200, "osrm routing requested, but unable to get a " + \
+                       "request from the local osrm server.  " + \
+                       "Are you sure it's running on port 5000 and covers the specified `bbox`?"
+            session = requests.Session()
+            session.headers.update({"Connection": "close"})
+        print("Using", ROUTING_METHOD, "to calculate routes", flush=True)
     
     city = cfg['city']
-    airport = cfg['airport']
-    if not isinstance(airport, list):
-        airport = [airport]
-    airport = [iata.upper() for iata in airport]
     states = cfg['state']
     if not isinstance(states, list):
         states = [states]
@@ -352,11 +350,22 @@ def main():
         raise ValueError("'year' must be in the range 2002-2023.\nReceived: "+str(year))  
 
     # Points that are not in the spot you want
-    point_locs_to_move = cfg['point_locs_to_move']
-    moved_point_locs = cfg['moved_point_locs']
+    try:
+        point_locs_to_move = cfg['point_locs_to_move']
+    except:
+        point_locs_to_move = []
+    try:
+        moved_point_locs = cfg['moved_point_locs']
+    except:
+        moved_point_locs = []
+    assert len(point_locs_to_move) == len(moved_point_locs), "`point_locs_to_move` and `moved_point_locs` must have the same number of entries, but received "+str(len(point_locs_to_move))+" entries for `point_locs_to_move` and "+str(len(moved_point_locs))+" entries for `moved_point_locs`"
 
     # Airport data
     try:
+        airport = cfg['airport']
+        if not isinstance(airport, list):
+            airport = [airport]
+        airport = [iata.upper() for iata in airport]
         airport_daily_passengers = cfg['airport_daily_passengers']
         if not isinstance(airport_daily_passengers, list):
             airport_daily_passengers = [airport_daily_passengers]
@@ -1488,45 +1497,48 @@ def main():
                     pops_by_id[pop['id']]['drivingSeconds']  = pop['drivingSeconds']
                     pops_by_id[pop['id']]['drivingDistance'] = pop['drivingDistance']
         elif ROUTING_METHOD == "osrm":
+            print("Calculating routes using local OSRM server.")
             for ipoint in range(len(demand['points'])):
-                    home_point = demand['points'][ipoint]
-                    home_id = home_point['id']
+                #if not ipoint%100:
+                print(ipoint, "/", len(demand['points']), end='\r')
+                home_point = demand['points'][ipoint]
+                home_id = home_point['id']
+                # Get nearest point
+                response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
+                                        str(home_point['location'][0])+","+\
+                                        str(home_point['location'][1]))
+                if response.status_code != 200:
+                    print("Invalid response for home point", home_id)
+                    print("Skipping.")
+                    continue
+                home_node_loc = response.json()['waypoints'][0]['location']
+                pops = [p for p in demand['pops'] if p['residenceId'] == home_id]
+                for p in pops:
+                    job_id = p['jobId']
+                    job_point = points_by_id[job_id]
                     # Get nearest point
                     response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
-                                            str(home_point['location'][0])+","+\
-                                            str(home_point['location'][1]))
+                                            str(job_point['location'][0])+","+\
+                                            str(job_point['location'][1]))
                     if response.status_code != 200:
-                        print("Invalid response for home point", home_id)
+                        print("Invalid response for home point", home_id, "at job point", job_id)
                         print("Skipping.")
                         continue
-                    home_node_loc = response.json()['waypoints'][0]['location']
-                    pops = [p for p in demand['pops'] if p['residenceId'] == home_id]
-                    for p in pops:
-                        job_id = p['jobId']
-                        job_point = points_by_id[job_id]
-                        # Get nearest point
-                        response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
-                                    str(job_point['location'][0])+","+\
-                                    str(job_point['location'][1]))
-                        if response.status_code != 200:
-                            print("Invalid response for home point", home_id, "at job point", job_id)
-                            print("Skipping.")
-                            continue
-                        job_node_loc = response.json()['waypoints'][0]['location']
-                        # Get route
-                        response = requests.get("http://localhost:5000/route/v1/driving/"+\
-                                    str(home_node_loc[0])+","+\
-                                    str(home_node_loc[1])+";"+\
-                                    str(job_node_loc [0])+","+\
-                                    str(job_node_loc [1]))
-                        if response.status_code != 200:
-                            print("Invalid response for route between home point", home_id, "and job point", job_id)
-                            print("Skipping.")
-                            continue
-                        resp = response.json()
-                        p['drivingSeconds']  = int(resp['routes'][0]['duration'])
-                        p['drivingDistance'] = int(resp['routes'][0]['distance'])
-
+                    job_node_loc = response.json()['waypoints'][0]['location']
+                    # Get route
+                    response = requests.get("http://localhost:5000/route/v1/driving/"+\
+                                            str(home_node_loc[0])+","+\
+                                            str(home_node_loc[1])+";"+\
+                                            str(job_node_loc [0])+","+\
+                                            str(job_node_loc [1])+"?overview=false")
+                    if response.status_code != 200:
+                        print("Invalid response for route between home point", home_id, "and job point", job_id)
+                        print("Skipping.")
+                        continue
+                    resp = response.json()
+                    p['drivingSeconds']  = int(resp['routes'][0]['duration'])
+                    p['drivingDistance'] = int(resp['routes'][0]['distance'])
+            print("")
 
     ###############################################################################
 
