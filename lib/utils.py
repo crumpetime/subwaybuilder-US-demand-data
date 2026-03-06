@@ -10,6 +10,9 @@ import numpy as np
 maxPopThreshold = np.array([25, 50, 75, 200, 500, 5000, 15000, np.inf])
 bufferMeters = np.array([1500, 1000, 500, 250, 200, 150, 125, 100])
 
+km2m   = 1000 # km -> meter
+hr2sec = 3600 # hour -> seconds
+
 def compute_centroid(coords, weights=None):
     if weights is None:
         weights = np.ones(len(coords))
@@ -46,6 +49,12 @@ def haversine(lon1, lat1, lon2, lat2):
     c = 2 * np.asin(np.sqrt(a)) 
     r = 6371000 # Radius of earth in meters. Use 3956 for miles. Determines return value units.
     return c * r
+
+def haversine_travel_time(lon1, lat1, lon2, lat2, kph=30):
+    dist = haversine(lon1, lat1, lon2, lat2)
+    speed_m_s = kph * km2m / hr2sec
+    duration = dist / speed_m_s
+    return dist, duration
 
 def in_cbd(loc, cbd_bbox=None):
     if cbd_bbox is not None:

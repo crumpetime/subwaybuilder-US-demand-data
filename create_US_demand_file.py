@@ -1500,7 +1500,7 @@ def main():
             print("Calculating routes using local OSRM server.")
             for ipoint in range(len(demand['points'])):
                 #if not ipoint%100:
-                print(ipoint, "/", len(demand['points']), end='\r')
+                print(ipoint+1, "/", len(demand['points']), end='\r')
                 home_point = demand['points'][ipoint]
                 home_id = home_point['id']
                 # Get nearest point
@@ -1536,8 +1536,17 @@ def main():
                         print("Skipping.")
                         continue
                     resp = response.json()
-                    p['drivingSeconds']  = int(resp['routes'][0]['duration'])
-                    p['drivingDistance'] = int(resp['routes'][0]['distance'])
+                    if resp["code"] == "NoRoute":
+                        print("No route between home point", home_id, "and job point", job_id, \
+                              ".  Using straight-line distance.")
+                        dist, duration = U.haversine_travel_time(home_node_loc[0], home_node_loc[1], 
+                                                                 job_node_loc [0], job_node_loc [1])
+                        p['drivingDistance'] = int(dist)
+                        p['drivingSeconds']  = int(duration)
+                    else:
+                        resp = response.json()
+                        p['drivingSeconds']  = int(resp['routes'][0]['duration'])
+                        p['drivingDistance'] = int(resp['routes'][0]['distance'])
             print("")
 
     ###############################################################################
