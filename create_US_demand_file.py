@@ -1504,6 +1504,7 @@ def main():
                 home_point = demand['points'][ipoint]
                 home_id = home_point['id']
                 # Get nearest point
+                time.sleep(0.001)
                 response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
                                         str(home_point['location'][0])+","+\
                                         str(home_point['location'][1]))
@@ -1517,6 +1518,7 @@ def main():
                     job_id = p['jobId']
                     job_point = points_by_id[job_id]
                     # Get nearest point
+                    time.sleep(0.001)
                     response = requests.get("http://localhost:5000/nearest/v1/driving/"+\
                                             str(job_point['location'][0])+","+\
                                             str(job_point['location'][1]))
@@ -1526,6 +1528,7 @@ def main():
                         continue
                     job_node_loc = response.json()['waypoints'][0]['location']
                     # Get route
+                    time.sleep(0.001)
                     response = requests.get("http://localhost:5000/route/v1/driving/"+\
                                             str(home_node_loc[0])+","+\
                                             str(home_node_loc[1])+";"+\
