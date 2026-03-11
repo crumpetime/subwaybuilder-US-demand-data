@@ -50,8 +50,8 @@ See the examples/ directory for example JSON input files used for some of the ma
 <table>
   <tr>
     <th style="width:150px;">Parameter</th>
-    <th style="width:100px;">Type</th>
-    <th style="width:250px;">Description</th>
+    <th style="width:80px;">Type</th>
+    <th style="width:270px;">Description</th>
     <th>Example</th>
   </tr>
 
