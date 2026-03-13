@@ -224,7 +224,7 @@ See the examples/ directory for example JSON input files used for some of the ma
 
   <tr>
     <td>airport_required_locs</td>
-    <td>list of list of list</td>
+    <td>list of list of list of floats</td>
     <td>Preferred residence locations for airport travelers.</td>
     <td><code>[[[-77.61298, 43.15729], ...]]</code></td>
   </tr>
@@ -265,6 +265,13 @@ See the examples/ directory for example JSON input files used for some of the ma
     <td>list of list of floats</td>
     <td>Coordinates for each university's demand bubble.</td>
     <td><code>[[-77.62668, 43.12989], ...]</code></td>
+  </tr>
+
+  <tr>
+    <td>univ_req_residence</td>
+    <td>list of list of list of floats</td>
+    <td>Like <code>airport_required_locs</code>. Set residences for each university.</td>
+    <td><code>[[[-77.62668, 43.12989], ...], [], ...]</code></td>
   </tr>
 
   <tr>
