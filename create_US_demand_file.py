@@ -110,6 +110,7 @@ The input JSON file must have the following fields defined:
     univ_loc : list of list of floats, coordinates for each university's demand bubble.
                Example: [[-77.62668, 43.12989], [-77.67629, 43.08389], [-77.51239, 43.11575], 
                          [-77.51873, 43.10218], [-77.79857, 43.12568]]
+    univ_req_residence : like `airport_required_locs`, but for the universities
     univ_merge_within : list of ints, distance in meters to merge any nearby demand points into the new university demand point.
                         If not provided, values default to 0 so no mergers occur.
                         Example: [0, 350, 300, 0, 0]
@@ -436,6 +437,15 @@ def main():
         if not isinstance(univ_loc[0], list):
             univ_loc = [univ_loc]
         assert len(universities) == len(univ_loc), str(len(universities))+" universities provided, but "+str(len(univ_loc))+" university locations provided.  There must be one [lon, lat] coordinate value provided per university specified."
+        
+        try:
+            univ_req_residence = cfg['univ_req_residence']
+        except:
+            print("univ_req_residence not specified/understood.  All university pops will be placed according to the code's simple model.")
+            univ_req_residence = [[] for i in range(len(universities))]
+        else:
+            if not len(univ_req_residence):
+                univ_req_residence = [[] for i in range(len(universities))]
     
         try:
             univ_merge_within = cfg['univ_merge_within']
@@ -1280,18 +1290,21 @@ def main():
             # On-campus students
             point_locs = np.array([p['location'] for p in demand['points']])
             iloc_airport = [p['id'][:4] == "AIR_" for p in demand['points']]
+            iloc_univ    = [p['id'][:4] == "UNI_" for p in demand['points']]
             size_of_points = np.array([p['jobs'] for p in demand['points']])
             size_of_points[iloc_airport] = 0 # Don't consider the airport
+            size_of_points[iloc_univ   ] = 0 # or universities - TODO: limit this to only points within the same univ
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points**2 # Prefer places near campus
             ilocs = np.random.choice(weight_of_points.size, 
                                      size=int((oncampus * univ_perc_travel[0])//univ_pop_size[iuniv]), 
                                      p=weight_of_points/weight_of_points.sum())
-            i = 0 # in case len(ilocs)=0
+            counter = 0
             for i, iloc in enumerate(ilocs):
+                counter += 1
                 pop = {
-                        "id" : "UNI_" + universities[iuniv] + "_" + str(i+1),
+                        "id" : "UNI_" + universities[iuniv] + "_" + str(counter),
                         "residenceId" : point["id"],
                         "jobId" : demand['points'][iloc]["id"],
                         "size" : int(univ_pop_size[iuniv]),
@@ -1305,28 +1318,40 @@ def main():
                 point['popIds'].append(pop['id'])
     
             # Off-campus students
+            ilocs_uni_req = np.zeros(len(univ_req_residence[iuniv]), dtype=int)
+            for i in range(len(univ_req_residence[iuniv])):
+                ilocs_uni_req[i] = U.haversine(univ_req_residence[iuniv][i][0], univ_req_residence[iuniv][i][1], 
+                                               point_locs[:,0], point_locs[:,1]).argmin()
             size_of_points = np.array([p['residents'] for p in demand['points']])
             size_of_points[iloc_airport] = 0 # Don't consider the airport
+            size_of_points[iloc_univ   ] = 0 # or universities - TODO: limit this to only points within the same univ
+            size_of_points[ilocs_uni_req] = 0 # Don't consider these points, user already put pops there
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points
-            ilocs = np.random.choice(weight_of_points.size, 
-                                     size=int((offcampus * univ_perc_travel[1])//univ_pop_size[iuniv]), 
-                                     p=weight_of_points/weight_of_points.sum())
-            for j, iloc in enumerate(ilocs):
-                pop = {
-                        "id" : "UNI_" + universities[iuniv] + "_" + str(i+j+2),
-                        "residenceId" : demand['points'][iloc]["id"],
-                        "jobId" : point["id"],
-                        "size" : int(univ_pop_size[iuniv]),
-                        "drivingSeconds"  : 0,
-                        "drivingDistance" : 0
-                }
-                demand['pops'].append(pop)
-                demand['points'][iloc]['residents'] += pop['size']
-                point["jobs"] += pop['size']
-                demand['points'][iloc]['popIds'].append(pop['id'])
-                point['popIds'].append(pop['id'])
+            ilocs_uni_remain = np.random.choice(weight_of_points.size, 
+                                                size=int((offcampus * univ_perc_travel[1])//univ_pop_size[iuniv]) - ilocs_uni_req.size, 
+                                                p=weight_of_points/weight_of_points.sum())
+            for it in range(2):
+                if not it:
+                    locs_arr = ilocs_uni_req
+                else:
+                    locs_arr = ilocs_uni_remain
+                for j, iloc in enumerate(locs_arr):
+                    counter += 1
+                    pop = {
+                            "id" : "UNI_" + universities[iuniv] + "_" + str(counter),
+                            "residenceId" : demand['points'][iloc]["id"],
+                            "jobId" : point["id"],
+                            "size" : int(univ_pop_size[iuniv]),
+                            "drivingSeconds"  : 0,
+                            "drivingDistance" : 0
+                    }
+                    demand['pops'].append(pop)
+                    demand['points'][iloc]['residents'] += pop['size']
+                    point["jobs"] += pop['size']
+                    demand['points'][iloc]['popIds'].append(pop['id'])
+                    point['popIds'].append(pop['id'])
             univ_points.append(point)
     
         demand['points'] += univ_points
