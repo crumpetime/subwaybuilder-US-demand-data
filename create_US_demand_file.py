@@ -7,9 +7,6 @@ This script is meant to be run like
 The input JSON file must have the following fields defined:
     city : string, the city you're modeling.  
            Example: "Rochester"
-    airport : list of strings, IATA codes for the local airport 
-                               Note: The first listed airport is used here to uniquely identify a city.  
-              Example: ["ROC"]
     states : string or list of strings, two-letter code for the state(s) your map covers.  
             Example: "ny"
             Example: ["md", "dc", "va"]
@@ -82,6 +79,8 @@ The input JSON file must have the following fields defined:
                                  [-77.76969, 43.29365], [-77.75209, 43.29262], [-77.72819, 43.29165], 
                                  [-77.71078, 43.28141], [-77.54152, 43.22132]]
     
+    airport : list of strings, IATA codes for the local airport 
+              Example: ["ROC"]
     airport_daily_passengers : list of ints, number of daily passengers at the city's airports.
                                Example: [7000] 
     airport_loc : list of list of floats, coordinates in [lon, lat] of the city's airports.
@@ -914,8 +913,11 @@ def main():
 
     demand['points'] = new_points
     demand['pops'] = new_pops
-    print("  Current points:", len(new_points))
-    print("  Current pops:", len(new_pops))
+    print("  Current points:", len(demand['points']))
+    print("  Current pops:", len(demand['pops']))
+    print("  Current total pop size:", np.sum([p['size'] for p in demand['pops']]))
+    print("  Current workers:", np.sum([p['jobs'] for p in demand["points"]]))
+    print("  Current residents:", np.sum([p['residents'] for p in demand["points"]]))
 
     ###############################################################################
 
@@ -1100,7 +1102,11 @@ def main():
         new_pops.append(pop)
     demand['pops'] = new_pops
 
+    print("  Current points:", len(demand['points']))
     print("  Current pops:", len(demand['pops']))
+    print("  Current total pop size:", np.sum([p['size'] for p in demand['pops']]))
+    print("  Current workers:", np.sum([p['jobs'] for p in demand["points"]]))
+    print("  Current residents:", np.sum([p['residents'] for p in demand["points"]]))
 
     ###############################################################################
 
@@ -1545,11 +1551,18 @@ def main():
         demand['points'] += base_points
 
     ###############################################################################
+    
+    print("  Current points:", len(demand['points']))
+    print("  Current pops:", len(demand['pops']))
+    print("  Current total pop size:", np.sum([p['size'] for p in demand['pops']]))
+    print("  Current workers:", np.sum([p['jobs'] for p in demand["points"]]))
+    print("  Current residents:", np.sum([p['residents'] for p in demand["points"]]))
 
+    ###############################################################################
+
+    points_by_id = {p["id"]: p for p in demand["points"]}
+    pops_by_id   = {p["id"]: p for p in demand["pops"  ]}
     if CALCULATE_ROUTES:
-        points_by_id = {p["id"]: p for p in demand["points"]}
-        pops_by_id   = {p["id"]: p for p in demand["pops"  ]}
-        
         if ROUTING_METHOD == "osmnx":
             # Set up OSM graph
             print("Initializing OSM drive network graph")
@@ -1638,19 +1651,23 @@ def main():
 
     # Make sure that pops are <=200 in size
     print("Pops before enforcing size <="+str(MAXPOPSIZE)+":", len(demand['pops']))
+    counter=0
     for p in demand['pops']:
         if p['size'] > MAXPOPSIZE:
             niter = int(np.ceil(p['size'] / MAXPOPSIZE))
             for n in range(1, niter):
                 pop = copy.deepcopy(p)
-                pop['id'] += "_"+str(n)
+                pop['id'] += "_"+str(counter)
+                counter += 1
                 if n < niter - 1:
                     # More than MAXPOPSIZE pops remain - cap at MAXPOPSIZE
                     pop["size"] = MAXPOPSIZE
                 else:
-                    # Less than MAXPOPSIZE remains - put all into this pop
-                    pop["size"] = int(p['size']) % MAXPOPSIZE
+                    # <= MAXPOPSIZE remains - put all remaining into this pop
+                    pop["size"] = int(p['size']) - (MAXPOPSIZE * n)
                 demand["pops"].append(pop)
+                points_by_id[pop["jobId"]]["popIds"].append(pop["id"])
+                points_by_id[pop["residenceId"]]["popIds"].append(pop["id"])
             # Update the original pop
             p['size'] = MAXPOPSIZE
 
