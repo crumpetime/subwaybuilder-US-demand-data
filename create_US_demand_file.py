@@ -1289,14 +1289,16 @@ def main():
             
             # On-campus students
             point_locs = np.array([p['location'] for p in demand['points']])
-            iloc_airport = [p['id'][:4] == "AIR_" for p in demand['points']]
-            iloc_univ    = [p['id'][:4] == "UNI_" for p in demand['points']]
+            iloc_air  = [p['id'][:4] == "AIR_" for p in demand['points']]
+            iloc_univ = [p['id'][:4] == "UNI_" for p in demand['points']]
             size_of_points = np.array([p['jobs'] for p in demand['points']])
-            size_of_points[iloc_airport] = 0 # Don't consider the airport
+            size_of_points[iloc_air] = 0 # Don't consider the airport
             size_of_points[iloc_univ   ] = 0 # or universities - TODO: limit this to only points within the same univ
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points**2 # Prefer places near campus
+            # Focus pops within 40 km
+            weight_of_points[dist_of_points > 40000] = 0
             ilocs = np.random.choice(weight_of_points.size, 
                                      size=int((oncampus * univ_perc_travel[0])//univ_pop_size[iuniv]), 
                                      p=weight_of_points/weight_of_points.sum())
@@ -1323,12 +1325,14 @@ def main():
                 ilocs_uni_req[i] = U.haversine(univ_req_residence[iuniv][i][0], univ_req_residence[iuniv][i][1], 
                                                point_locs[:,0], point_locs[:,1]).argmin()
             size_of_points = np.array([p['residents'] for p in demand['points']])
-            size_of_points[iloc_airport] = 0 # Don't consider the airport
-            size_of_points[iloc_univ   ] = 0 # or universities - TODO: limit this to only points within the same univ
+            size_of_points[iloc_air     ] = 0 # Don't consider the airport
+            size_of_points[iloc_univ    ] = 0 # or universities - TODO: limit this to only points within the same univ
             size_of_points[ilocs_uni_req] = 0 # Don't consider these points, user already put pops there
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points
+            # Focus pops within 40 km
+            weight_of_points[dist_of_points > 40000] = 0
             ilocs_uni_remain = np.random.choice(weight_of_points.size, 
                                                 size=int((offcampus * univ_perc_travel[1])//univ_pop_size[iuniv]) - ilocs_uni_req.size, 
                                                 p=weight_of_points/weight_of_points.sum())
@@ -1404,12 +1408,14 @@ def main():
             ntarget_locs_ent_remain = int((ent_size[ient] - (psize * len(ent_req_residences[ient]))) / \
                                           psize)
             size_of_points = np.array([p['residents'] for p in demand['points']])
-            iloc_airport = [p['id'][:4] == "AIR_" for p in demand['points']]
-            size_of_points[iloc_airport ] = 0 # Don't consider these points
+            iloc_air = [p['id'][:4] == "AIR_" for p in demand['points']]
+            size_of_points[iloc_air     ] = 0 # Don't consider these points
             size_of_points[ilocs_ent_req] = 0 
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points
+            # Focus pops within 50 km
+            weight_of_points[dist_of_points > 50000] = 0
             
             ilocs_ent_remain = np.random.choice(size_of_points.size, size=ntarget_locs_ent_remain, 
                                                 replace=False, 
@@ -1480,9 +1486,9 @@ def main():
             
             # On-base pops
             point_locs = np.array([p['location'] for p in demand['points']])
-            iloc_airport = [p['id'][:4] == "AIR_" for p in demand['points']]
+            iloc_air = [p['id'][:4] == "AIR_" for p in demand['points']]
             size_of_points = np.array([p['jobs'] for p in demand['points']])
-            size_of_points[iloc_airport] = 0 # Don't consider the airport
+            size_of_points[iloc_air] = 0 # Don't consider the airport
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
             weight_of_points = size_of_points / dist_of_points**2 # Prefer places near base
@@ -1506,10 +1512,17 @@ def main():
 
             # Off-base pops
             size_of_points = np.array([p['residents'] for p in demand['points']])
-            size_of_points[iloc_airport] = 0 # Don't consider the airport
+            # Don't consider the airport, unis, entertainment, or other bases
+            iloc_uni = [p['id'][:4] == "UNI_" for p in demand['points']]
+            iloc_ent = [p['id'][:4] == "ENT_" for p in demand['points']]
+            iloc_mil = [p['id'][:4] == "MIL_" for p in demand['points']]
+            size_of_points[iloc_air] = 0
+            size_of_points[iloc_uni] = 0
+            size_of_points[iloc_ent] = 0
+            size_of_points[iloc_mil] = 0
             dist_of_points = U.haversine(point['location'][0], point['location'][1], 
                                          point_locs[:,0], point_locs[:,1])
-            weight_of_points = size_of_points / dist_of_points
+            weight_of_points = size_of_points / dist_of_points**2 # Prefer places near base
             ilocs = np.random.choice(weight_of_points.size, 
                                      size=int((offbase * base_perc_travel[1])//base_pop_size[ibase]), 
                                      p=weight_of_points/weight_of_points.sum())
@@ -1533,7 +1546,6 @@ def main():
 
     ###############################################################################
 
-    # Parallelize the route calculations over home nodes
     if CALCULATE_ROUTES:
         points_by_id = {p["id"]: p for p in demand["points"]}
         pops_by_id   = {p["id"]: p for p in demand["pops"  ]}
@@ -1542,16 +1554,16 @@ def main():
             # Set up OSM graph
             print("Initializing OSM drive network graph")
             if bbox["type"] == "box":
-                G = ox.graph_from_bbox(bbox, network_type='drive')#, simplify=False)
+                G = ox.graph_from_bbox(bbox["bounds"], network_type='drive')#, simplify=False)
             elif bbox["type"] == "polygon":
                 G = ox.graph_from_polygon(poly, network_type='drive')#, simplify=False)
             G = ox.truncate.largest_component(G, strongly=True)
             G = ox.add_edge_speeds(G)
             G = ox.add_edge_travel_times(G)
             
+            # Parallelize the route calculations over home nodes
             # Prepare arguments for parallel jobs
             print("Calculating driving paths for each home node.  This may take a while.")
-            
             process_home_node_worker = functools.partial(process_home_node, 
                                                          demand=demand, G=G, 
                                                          points_by_id=points_by_id)
@@ -1570,7 +1582,7 @@ def main():
             print("Calculating routes using local OSRM server.")
             for ipoint in range(len(demand['points'])):
                 #if not ipoint%100:
-                print(ipoint+1, "/", len(demand['points']), end='\r')
+                print("  Point", ipoint+1, "/", len(demand['points']), end='\r')
                 home_point = demand['points'][ipoint]
                 home_id = home_point['id']
                 # Get nearest point
