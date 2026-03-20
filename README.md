@@ -72,7 +72,7 @@ See the examples/ directory for example JSON input files used for some of the ma
   <tr>
     <td>state</td>
     <td>string or list</td>
-    <td>Two‑letter state code(s) your map covers.<br>Identical to <code>states</code>, kept for backward compatibility.</td>
+    <td>Two‑letter state code(s) your map covers.<br>Identical to <code>states</code>, kept for backward compatibility.<br>Only used if <code>states</code> is not defined.</td>
     <td><code>"ny"</code><br><code>["md","dc","va"]</code></td>
   </tr>
 
