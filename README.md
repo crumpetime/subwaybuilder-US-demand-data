@@ -70,6 +70,13 @@ See the examples/ directory for example JSON input files used for some of the ma
   </tr>
 
   <tr>
+    <td>state</td>
+    <td>string or list</td>
+    <td>Two‑letter state code(s) your map covers.<br>Identical to <code>states</code>, kept for backward compatibility.</td>
+    <td><code>"ny"</code><br><code>["md","dc","va"]</code></td>
+  </tr>
+
+  <tr>
     <td>year</td>
     <td>int</td>
     <td>Year of LODES data (2002–2023).<br><b>Note:</b> Some states only have data for part of this range.</td>
