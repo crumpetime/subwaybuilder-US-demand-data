@@ -10,6 +10,7 @@ The input JSON file must have the following fields defined:
     states : string or list of strings, two-letter code for the state(s) your map covers.  
             Example: "ny"
             Example: ["md", "dc", "va"]
+    state : identical to `states`.  Kept for backward compatibility.  This is only used if `states` is not specified.
     year : int, the year you want to use for the LODES data.  At the time of writing, it must be within 2002-2023.  
            Example: 2022
     bbox : list of floats OR dict with "type" and "bounds" (list of floats) or "coordinates" (list of list of floats).
@@ -281,8 +282,20 @@ def process_home_node(i, demand, G, points_by_id):
 def main():
     start = time.time()
     # Load the configuration file
-    with open(sys.argv[1], 'r') as fcfg:
-        cfg = json.load(fcfg)
+    cfg = None
+    try:
+        with open(sys.argv[1], 'r') as fcfg:
+            cfg = json.load(fcfg)
+    except:
+        while cfg is None:
+            user_input = input("Enter config file path: ").strip()
+            try:
+                with open(user_input, 'r') as fcfg:
+                    cfg = json.load(fcfg)
+            except FileNotFoundError as e:
+                print(e)
+            except json.JSONDecodeError:
+                print(f"File exists but contains invalid JSON: {user_input}")
 
     # Defines for preparing the demand file
     MAXPOPSIZE = cfg['MAXPOPSIZE']
@@ -364,8 +377,14 @@ def main():
         print("Using", ROUTING_METHOD, "to calculate routes", flush=True)
     
     city = cfg['city']
-    states = cfg['state']
-    if not isinstance(states, list):
+    try:
+        states = cfg['states']
+    except:
+        try:
+            states = cfg['state']
+        except:
+            raise ValueError("Neither `states` nor `state` found in configuration file.")
+    if isinstance(states, str):
         states = [states]
     states = [state.lower() for state in states]
     year = cfg['year']
