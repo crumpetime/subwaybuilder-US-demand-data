@@ -573,7 +573,7 @@ def main():
             hot_travel_split = cfg["hot_travel_split"]
         except:
             print("hot_travel_split not specified/understood.  Assuming a 50/50 travel split for hotel pops.")
-            hot_pop_size = [0.5,0.5]
+            hot_travel_split = [0.5,0.5]
     except Exception as e:
         print("Hotel data either not provided or missing required parameters:\n", e, "\nDisabling hotels.")
         hotels = False
