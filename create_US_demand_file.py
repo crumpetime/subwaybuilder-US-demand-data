@@ -1150,7 +1150,7 @@ def main():
         #ent_req_residences = []
         #airport_req_locs = []
 
-        #ent_hotel_pop_count = []
+        ent_hotel_pop_count = []
         #airport_pop_count = []
         #ent_res_avail = []
         
